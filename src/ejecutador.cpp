@@ -18,7 +18,19 @@ static string recortar(const string &s){
     return s.substr(b, e-b);
 }
 
-
+// Tokenizar una linea simple por espacios en un argv estilo exec
+// args_out debe ser char*[] con espacio para max_args, se termina con nullptr
+static void tokenize_to_argv(const string &linea, char *args_out[], int max_args) {
+    char buf[512];
+    strncpy(buf, linea.c_str(), sizeof(buf)); buf[sizeof(buf)-1] = '\0';
+    int i = 0;
+    char *t = strtok(buf, " ");
+    while (t != nullptr && i < max_args-1) {
+        args_out[i++] = t;
+        t = strtok(nullptr, " ");
+    }
+    args_out[i] = nullptr;
+}
 
 
 void ejecutar_comando(const string &comando) {
