@@ -126,6 +126,10 @@ void ejecutar_comando(const string &comando) {
 
     if (pid == 0) {
 
+        if(manejar_tuberias(args)){
+            _exit(0);
+        }
+
         int cen=-1;
         for(int j=0; args[j] != nullptr; j++){
             if(strcmp(args[j], ">") == 0){
