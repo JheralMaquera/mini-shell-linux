@@ -32,6 +32,29 @@ static void tokenize_to_argv(const string &linea, char *args_out[], int max_args
     args_out[i] = nullptr;
 }
 
+// Tokenizar y duplicar tokens en heap. Retorna un array recién allocado (char**) con
+// máximo max_args entradas (última es nullptr). El llamador debe liberar con free_tokenized_argv.
+static char **tokenize_dup_to_argv(const string &linea, int max_args) {
+    char buf[512];
+    strncpy(buf, linea.c_str(), sizeof(buf)); buf[sizeof(buf)-1] = '\0';
+    char **out = (char **)malloc(max_args * sizeof(char*));
+    if (!out) return nullptr;
+    int i = 0;
+    char *t = strtok(buf, " ");
+    while (t != nullptr && i < max_args - 1) {
+        out[i++] = strdup(t);
+        t = strtok(nullptr, " ");
+    }
+    out[i] = nullptr;
+    return out;
+}
+
+static void free_tokenized_argv(char **arr) {
+    if (!arr) return;
+    for (int i = 0; arr[i] != nullptr; ++i) free(arr[i]);
+    free(arr);
+}
+
 // En el hijo: procesar redireccion '>' y ejecutar argv (no hace fork)
 // args es modificado para que execv no reciba tokens especiales
 static void ejecutar_args_simple(char *args[]) {
@@ -82,10 +105,13 @@ static void ejecutar_args_simple(char *args[]) {
 // Ejecutar pipeline simple: left | right
 static void ejecutar_pipeline_cmd(const string &left, const string &right) {
     const int MAX = 20;
-    char *argsL[MAX]; char *argsR[MAX];
-    tokenize_to_argv(left, argsL, MAX);
-    tokenize_to_argv(right, argsR, MAX);
-    if (argsL[0] == nullptr || argsR[0] == nullptr) { cerr << "Pipe: sintaxis invalida" << endl; return; }
+    char **argsL = tokenize_dup_to_argv(left, MAX);
+    char **argsR = tokenize_dup_to_argv(right, MAX);
+    if (argsL == nullptr || argsR == nullptr || argsL[0] == nullptr || argsR[0] == nullptr) {
+        cerr << "Pipe: sintaxis invalida" << endl;
+        free_tokenized_argv(argsL); free_tokenized_argv(argsR);
+        return;
+    }
 
     int tub[2]; if (pipe(tub) < 0) { perror("pipe"); return; }
     pid_t p1 = fork();
@@ -114,6 +140,9 @@ static void ejecutar_pipeline_cmd(const string &left, const string &right) {
     // padre
     close(tub[0]); close(tub[1]);
     int st; waitpid(p1, &st, 0); waitpid(p2, &st, 0);
+    // liberar memoria usada para argv
+    free_tokenized_argv(argsL);
+    free_tokenized_argv(argsR);
 }
 
 
@@ -122,8 +151,24 @@ void ejecutar_comando(const string &comando) {
         return;
     }
 
+    // Si la línea contiene una tubería simple 'left | right', manejarla aquí
+    size_t pos_pipe = comando.find('|');
+    if (pos_pipe != string::npos) {
+        string left = recortar(comando.substr(0, pos_pipe));
+        string right = recortar(comando.substr(pos_pipe + 1));
+        if (left.empty() || right.empty()) {
+            cerr << "Pipe: sintaxis invalida" << endl;
+            return;
+        }
+        ejecutar_pipeline_cmd(left, right);
+        return;
+    }
+
+    // eliminar posibles saltos de linea y recortar espacios alrededor
+    string cmd_trim = recortar(comando);
+
     char buffer[256];
-    strncpy(buffer, comando.c_str(), sizeof(buffer));
+    strncpy(buffer, cmd_trim.c_str(), sizeof(buffer));
     buffer[sizeof(buffer) - 1] = '\0';
     const int MAX= 10;
     char *args[MAX];

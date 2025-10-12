@@ -9,7 +9,11 @@ int main(){
     
     while(true){
         cout<<"minishell> ";
-        getline(cin, comando);
+        if (!getline(cin, comando)) {
+            // EOF or error on stdin (e.g. input was piped and ended) -> exit loop
+            cout << "\n"; // nice newline after prompt
+            break;
+        }
         if(comando == "salir"){
             break;
         }
