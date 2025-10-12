@@ -1,5 +1,7 @@
+#include "ejecutador.h"
 #include <iostream>
 #include <string>
+
 using namespace std;
 
 int main(){
@@ -14,7 +16,7 @@ int main(){
         if(comando.empty()){
             continue;
         }  
-        cout<<"Ejecutando comando: "<<comando<<endl;
+        ejecutar_comando(comando);
     }
     return 0;
 }
