@@ -6,7 +6,7 @@ using namespace std;
 
 int main(){
     string comando;
-    
+
     while(true){
         cout<<"minishell> ";
         getline(cin, comando);
@@ -15,8 +15,14 @@ int main(){
         }
         if(comando.empty()){
             continue;
-        }  
-        ejecutar_comando(comando);
+        }
+        
+        if(comando.rfind("paralelo ", 0) == 0){
+            string resto = comando.substr(9);
+            ejecutar_paralelo(resto);
+        }else{
+            ejecutar_comando(comando);
+        }
     }
     return 0;
 }
