@@ -18,20 +18,6 @@ static string recortar(const string &s){
     return s.substr(b, e-b);
 }
 
-// Tokenizar una linea simple por espacios en un argv estilo exec
-// args_out debe ser char*[] con espacio para max_args, se termina con nullptr
-static void tokenize_to_argv(const string &linea, char *args_out[], int max_args) {
-    char buf[512];
-    strncpy(buf, linea.c_str(), sizeof(buf)); buf[sizeof(buf)-1] = '\0';
-    int i = 0;
-    char *t = strtok(buf, " ");
-    while (t != nullptr && i < max_args-1) {
-        args_out[i++] = t;
-        t = strtok(nullptr, " ");
-    }
-    args_out[i] = nullptr;
-}
-
 // Tokenizar y duplicar tokens en heap. Retorna un array recién allocado (char**) con
 // máximo max_args entradas (última es nullptr). El llamador debe liberar con free_tokenized_argv.
 static char **tokenize_dup_to_argv(const string &linea, int max_args) {
