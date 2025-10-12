@@ -17,8 +17,8 @@ int main(){
             continue;
         }
         
-        if(comando.rfind("paralelo ", 0) == 0){
-            string resto = comando.substr(9);
+        if(comando.rfind("paralelo", 0) == 0){
+            string resto = comando.substr(8);
             ejecutar_paralelo(resto);
         }else{
             ejecutar_comando(comando);
