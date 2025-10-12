@@ -6,7 +6,7 @@ using namespace std;
 
 int main(){
     string comando;
-
+    
     while(true){
         cout<<"minishell> ";
         getline(cin, comando);
