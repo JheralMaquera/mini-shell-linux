@@ -79,7 +79,42 @@ static void ejecutar_args_simple(char *args[]) {
     _exit(1);
 }
 
+// Ejecutar pipeline simple: left | right
+static void ejecutar_pipeline_cmd(const string &left, const string &right) {
+    const int MAX = 20;
+    char *argsL[MAX]; char *argsR[MAX];
+    tokenize_to_argv(left, argsL, MAX);
+    tokenize_to_argv(right, argsR, MAX);
+    if (argsL[0] == nullptr || argsR[0] == nullptr) { cerr << "Pipe: sintaxis invalida" << endl; return; }
 
+    int tub[2]; if (pipe(tub) < 0) { perror("pipe"); return; }
+    pid_t p1 = fork();
+    if (p1 < 0) { perror("fork"); close(tub[0]); close(tub[1]); return; }
+    if (p1 == 0) {
+        // hijo izquierdo: stdout -> tub[1]
+        if (dup2(tub[1], STDOUT_FILENO) < 0) { perror("dup2"); _exit(1); }
+        close(tub[0]); close(tub[1]);
+        // ejecutar left
+        if (argsL[0][0] == '/') execv(argsL[0], argsL);
+        else { char ruta[512]; snprintf(ruta, sizeof(ruta), "/bin/%s", argsL[0]); execv(ruta, argsL); }
+        perror("Error al ejecutar comando (lado izquierdo)"); _exit(127);
+    }
+
+    pid_t p2 = fork();
+    if (p2 < 0) { perror("fork"); close(tub[0]); close(tub[1]); return; }
+    if (p2 == 0) {
+        // hijo derecho: stdin <- tub[0]
+        if (dup2(tub[0], STDIN_FILENO) < 0) { perror("dup2"); _exit(1); }
+        close(tub[0]); close(tub[1]);
+        if (argsR[0][0] == '/') execv(argsR[0], argsR);
+        else { char ruta[512]; snprintf(ruta, sizeof(ruta), "/bin/%s", argsR[0]); execv(ruta, argsR); }
+        perror("Error al ejecutar comando (lado derecho)"); _exit(127);
+    }
+
+    // padre
+    close(tub[0]); close(tub[1]);
+    int st; waitpid(p1, &st, 0); waitpid(p2, &st, 0);
+}
 
 
 void ejecutar_comando(const string &comando) {
