@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <sys/stat.h> 
+#include <cerrno>
 using namespace std;
 
 void ejecutar_comando(const string &comando) {
@@ -34,11 +35,16 @@ void ejecutar_comando(const string &comando) {
             // Comprobar si el archivo existe y tiene permisos de ejecucion
             struct stat errores;
             if (stat(args[0], &errores) != 0) {
-                cerr << "Error: la ruta '" << args[0] << "' no existe." << endl;
+                int err = errno;
+                perror(("Error: la ruta '" + string(args[0]) + "' no existe").c_str());
+                cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
                 exit(1);
             }
             if (!(errores.st_mode & S_IXUSR)) {
-                cerr << "Error: la ruta '" << args[0] << "' no tiene permisos de ejecución." << endl;
+                int err = EACCES; // permiso denegado
+                errno = err; // para que perror muestre el texto correcto
+                perror(("Error: la ruta '" + string(args[0]) + "' no tiene permisos de ejecución.").c_str());
+                cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
                 exit(1);
             }
             execv(args[0], args);
@@ -49,11 +55,16 @@ void ejecutar_comando(const string &comando) {
             // Comprobar si existe y tiene permisos
             struct stat info;
             if (stat(ruta, &info) != 0) {
-                cerr << "Error: no se encontró el comando '" << args[0] << "'." << endl;
+                int err = errno;
+                perror(("Error: no se encontró el comando '" + string(args[0]) + "'").c_str());
+                cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
                 exit(1);
             }
             if (!(info.st_mode & S_IXUSR)) {
-                cerr << "Error: el archivo no tiene permisos de ejecución." << endl;
+                int err = EACCES;
+                errno = err;
+                perror(("Error: el archivo '" + string(args[0]) + "' no tiene permisos de ejecución.").c_str());
+                cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
                 exit(1);
             }
 
@@ -64,6 +75,7 @@ void ejecutar_comando(const string &comando) {
     } 
     else if (pid > 0) {
         waitpid(pid, nullptr, 0);
+        
     } 
     else {
         perror("Error al crear proceso fork");
