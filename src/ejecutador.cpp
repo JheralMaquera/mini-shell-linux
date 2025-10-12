@@ -9,6 +9,14 @@
 #include <fcntl.h>
 using namespace std;
 
+// Recortar espacios 
+static string recortar(const string &s){
+    size_t b = 0;
+    while (b < s.size() && isspace((unsigned char)s[b])) ++b;
+    size_t e = s.size();
+    while (e > b && isspace((unsigned char)s[e-1])) --e;
+    return s.substr(b, e-b);
+}
 
 
 
