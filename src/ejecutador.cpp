@@ -41,52 +41,6 @@ static void free_tokenized_argv(char **arr) {
     free(arr);
 }
 
-// En el hijo: procesar redireccion '>' y ejecutar argv (no hace fork)
-// args es modificado para que execv no reciba tokens especiales
-static void ejecutar_args_simple(char *args[]) {
-    // Manejar redireccion '>' simple
-    int idx = -1;
-    for (int j = 0; args[j] != nullptr; ++j) {
-        if (strcmp(args[j], ">") == 0) { idx = j; break; }
-    }
-    if (idx != -1) {
-        if (args[idx+1] == nullptr) {
-            errno = EINVAL; perror("Error: falta el nombre del archivo para redireccionar la salida");
-            cerr << "(errno " << errno << ": " << strerror(errno) << ")" << endl;
-            _exit(2);
-        }
-        char *file = args[idx+1];
-        int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        if (fd < 0) {
-            int err = errno;
-            perror((string("Error al abrir o crear el archivo '") + file + "'").c_str());
-            cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
-            _exit(1);
-        }
-        if (dup2(fd, STDOUT_FILENO) < 0) { perror("dup2"); _exit(1); }
-        close(fd);
-        // quitar token '>' para exec (poner nullptr en su lugar)
-        args[idx] = nullptr;
-    }
-
-    // Resolver ruta y ejecutar
-    if (args[0] == nullptr) _exit(0);
-    if (args[0][0] == '/') {
-        // ruta absoluta
-        struct stat st;
-        if (stat(args[0], &st) != 0) { int err = errno; perror((string("Error: la ruta '") + args[0] + "' no existe").c_str()); cerr << "(errno " << err << ": " << strerror(err) << ")" << endl; _exit(1); }
-        if (!(st.st_mode & S_IXUSR)) { int err = EACCES; errno = err; perror((string("Error: la ruta '") + args[0] + "' no tiene permisos de ejecución.").c_str()); cerr << "(errno " << err << ": " << strerror(err) << ")" << endl; _exit(1); }
-        execv(args[0], args);
-    } else {
-        char ruta[512]; snprintf(ruta, sizeof(ruta), "/bin/%s", args[0]);
-        struct stat st2;
-        if (stat(ruta, &st2) != 0) { int err = errno; perror((string("Error: no se encontró el comando '") + args[0] + "'").c_str()); cerr << "(errno " << err << ": " << strerror(err) << ")" << endl; _exit(1); }
-        if (!(st2.st_mode & S_IXUSR)) { int err = EACCES; errno = err; perror((string("Error: el archivo '") + args[0] + "' no tiene permisos de ejecución.").c_str()); cerr << "(errno " << err << ": " << strerror(err) << ")" << endl; _exit(1); }
-        execv(ruta, args);
-    }
-    perror("Error al ejecutar el comando");
-    _exit(1);
-}
 
 // Ejecutar pipeline simple: left | right
 static void ejecutar_pipeline_cmd(const string &left, const string &right) {
