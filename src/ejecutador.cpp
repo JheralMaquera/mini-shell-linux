@@ -14,7 +14,6 @@ void ejecutar_comando(const string &comando) {
     if (comando.empty()){
         return;
     }
-
     char buffer[256];
     strncpy(buffer, comando.c_str(), sizeof(buffer));
     buffer[sizeof(buffer) - 1] = '\0';
@@ -33,7 +32,9 @@ void ejecutar_comando(const string &comando) {
     pid_t pid = fork();
 
     if (pid == 0) {
-
+        if(manejar_tuberias(args)){
+            _exit(0);
+        }
         manejar_redireccion(args);
         ejecutar_ruta(args);
     } 
