@@ -28,7 +28,9 @@ void manejar_redireccion(char *args[]) {
     char *archivo = args[pos + 1];
     int fd = open(archivo, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) {
+        int err = errno;
         perror(("Error al abrir o crear archivo '" + string(archivo) + "'").c_str());
+        cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
         exit(1);
     }
 

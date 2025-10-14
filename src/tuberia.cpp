@@ -37,7 +37,10 @@ bool manejar_tuberias(char *args[]){
 
     int fd[2];
     if (pipe(fd) == -1) {
-        perror("Error al crear la tubería");
+        int err = errno;
+    perror("Error al crear la tubería");
+    cerr << endl;
+    cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
         exit(1);
     }
     pid_t pid1 = fork();
@@ -46,7 +49,9 @@ bool manejar_tuberias(char *args[]){
         close(fd[0]);
         close(fd[1]);
         execvp(cmd1[0], cmd1);
+        int err = errno;
         perror("Error al ejecutar el primer comando");
+        cerr << "(errno " << err << ": " << strerror(err) << ")" << endl << endl;
         exit(1);
     }
 
@@ -56,7 +61,9 @@ bool manejar_tuberias(char *args[]){
         close(fd[1]);
         close(fd[0]);
         execvp(cmd2[0], cmd2);
+        int err2 = errno;
         perror("Error al ejecutar el segundo comando");
+        cerr << "(errno " << err2 << ": " << strerror(err2) << ")" << endl <<endl;
         exit(1);
     }
 

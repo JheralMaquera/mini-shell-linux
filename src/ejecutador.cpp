@@ -43,7 +43,9 @@ void ejecutar_comando(const string &comando) {
         
     } 
     else {
+        int err = errno;
         perror("Error al crear proceso fork");
+        cerr << "(errno " << err << ": " << strerror(err) << ")" << endl;
     }
 }
 

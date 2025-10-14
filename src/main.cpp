@@ -10,8 +10,7 @@ int main(){
     while(true){
         cout<<"minishell> ";
         if (!getline(cin, comando)) {
-            // EOF or error on stdin (e.g. input was piped and ended) -> exit loop
-            cout << "\n"; // nice newline after prompt
+            cout << "\n";
             break;
         }
         if(comando == "salir"){
@@ -21,7 +20,7 @@ int main(){
             continue;
         }
         
-        if(comando.rfind("paralelo", 0) == 0){
+        if(comando.rfind("parallel", 0) == 0){
             string resto = comando.substr(8);
             ejecutar_paralelo(resto);
         }else{
