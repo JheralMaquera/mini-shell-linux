@@ -37,7 +37,7 @@ Estas funciones permiten la ejecución de comandos, manejo de redirecciones, tub
 |-------------------------------|:------------:|------------------------------------------------------------------|
 | Ejecución de comandos         |      ✔️      | Comandos estándar y rutas absolutas                              |
 | Redirección de salida (`>`)   |      ✔️      | Redirige salida estándar a archivo                               |
-| Tuberías simples (`|`)        |      ✔️      | Conecta salida de un comando con entrada de otro                 |
+| Tuberías simples (`\|`)        |      ✔️      | Conecta salida de un comando con entrada de otro                 |
 | Ejecución en paralelo (`parallel cmd1 ; cmd2 ; ...`)   |      ✔️      | Ejecuta varios comandos en paralelo usando hilos                 |
 | Manejo de errores             |      ✔️      | Mensajes claros con códigos de error (`errno`)                   |
 | Combinación tubería/redirección|      ❌      | No soportado: `cmd1 | cmd2 > archivo`                           |
