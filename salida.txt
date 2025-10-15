@@ -1,7 +1,0 @@
-total 60
-drwxrwxr-x 2 yereeh yereeh  4096 oct 11 12:03 docs
-drwxrwxr-x 2 yereeh yereeh  4096 oct 13 17:11 include
--rwxrwxr-x 1 yereeh yereeh 40888 oct 14 16:24 minishell
--rw-rw-r-- 1 yereeh yereeh  5239 oct 14 17:06 README.md
--rw-r--r-- 1 yereeh yereeh     0 oct 14 17:09 salida.txt
-drwxrwxr-x 2 yereeh yereeh  4096 oct 13 17:12 src

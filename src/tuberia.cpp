@@ -63,7 +63,7 @@ bool manejar_tuberias(char *args[]){
         execvp(cmd2[0], cmd2);
         int err2 = errno;
         perror("Error al ejecutar el segundo comando");
-        cerr << "(errno " << err2 << ": " << strerror(err2) << ")" << endl <<endl;
+        cerr << "(errno " << err2 << ": " << strerror(err2) << ")" << endl << endl;
         exit(1);
     }
 
